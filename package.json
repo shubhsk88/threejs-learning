@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.2.0",
+    "gsap": "^3.8.0",
     "three": "^0.132.2"
   },
   "devDependencies": {
