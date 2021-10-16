@@ -64,10 +64,18 @@ const size = {
 // mesh.scale.set(2,0.5,0.5)
 
 //Camera
-const camera = new THREE.PerspectiveCamera(75, size.width / size.height);
+//45-75 good range
+const camera = new THREE.PerspectiveCamera(
+  140,
+  size.width / size.height,
+  1,
+  1000,
+);
 
 // camera.lookAt(mesh.position)
-camera.position.z = 3;
+camera.position.set(2, 2, 2);
+camera.lookAt(mesh.position);
+
 // console.log(mesh.position.distanceTo(camera.position))
 
 scene.add(camera);
@@ -77,23 +85,23 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(size.width, size.height);
 
-gsap.to(mesh.position, { x: 2, duration: 1, delay: 1 });
-gsap.to(mesh.position, { x: 0, duration: 1, delay: 2 });
+// gsap.to(mesh.position, { x: 2, duration: 1, delay: 1 });
+// gsap.to(mesh.position, { x: 0, duration: 1, delay: 2 });
 //Clock
-// const clock = new THREE.Clock();
+const clock = new THREE.Clock();
 
-// let time = Date.now();
+let time = Date.now();
 //Animations
 const tick = () => {
   // const currentTime = Date.now();
   // const deltaTime = currentTime - time;
   // time = currentTime;
 
-  // const elapsedTime = clock.getElapsedTime();
+  const elapsedTime = clock.getElapsedTime();
 
   //Update objects
   //Try these with mesh options
-  // mesh.rotation.x = elapsedTime;
+  mesh.rotation.y = elapsedTime;
   // camera.position.y = Math.sin(elapsedTime);
   // camera.position.x = Math.cos(elapsedTime);
   // camera.lookAt(mesh.position);
