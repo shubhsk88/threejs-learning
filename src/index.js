@@ -6,11 +6,20 @@
 import confetti from 'canvas-confetti';
 import * as THREE from 'three';
 import { Vector3 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
 //scene
 const scene = new THREE.Scene();
 
 // Objects
+
+//Cursors
+const cursor = { x: 0, y: 0 };
+
+// window.addEventListener('mousemove', (event) => {
+//   cursor.x = event.clientX / size.width - 0.5;
+//   cursor.y = -(event.clientY / size.height - 0.5);
+// });
 
 // const group=new THREE.Group()
 // group.position.y=1
@@ -65,23 +74,30 @@ const size = {
 
 //Camera
 //45-75 good range
-const camera = new THREE.PerspectiveCamera(
-  140,
-  size.width / size.height,
-  1,
-  1000,
-);
+const camera = new THREE.PerspectiveCamera(70, size.width / size.height);
+camera.position.z = -1;
+camera.lookAt(mesh.position);
+// const aspectRatio = size.width / size.height;
+// const camera = new THREE.OrthographicCamera(
+//   -1 * aspectRatio,
+//   1 * aspectRatio,
+//   -1,
+//   1,
+//   0.1,
+//   100,
+// );
 
 // camera.lookAt(mesh.position)
-camera.position.set(2, 2, 2);
-camera.lookAt(mesh.position);
+// camera.position.z = -1;
+// camera.lookAt(mesh.position);
 
 // console.log(mesh.position.distanceTo(camera.position))
 
 scene.add(camera);
 
+const canvas = document.querySelector('.webgl');
 const renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector('.webgl'),
+  canvas,
 });
 renderer.setSize(size.width, size.height);
 
@@ -89,6 +105,10 @@ renderer.setSize(size.width, size.height);
 // gsap.to(mesh.position, { x: 0, duration: 1, delay: 2 });
 //Clock
 const clock = new THREE.Clock();
+
+//Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
 
 let time = Date.now();
 //Animations
@@ -99,9 +119,14 @@ const tick = () => {
 
   const elapsedTime = clock.getElapsedTime();
 
+  controls.update();
+
+  // camera.position.x = Math.sin(cursor.x * 10) * 3;
+  // camera.position.z = Math.cos(cursor.x * 10) * 3;
+  // camera.lookAt(mesh.position);
   //Update objects
   //Try these with mesh options
-  mesh.rotation.y = elapsedTime;
+  // mesh.rotation.y = elapsedTime;
   // camera.position.y = Math.sin(elapsedTime);
   // camera.position.x = Math.cos(elapsedTime);
   // camera.lookAt(mesh.position);
