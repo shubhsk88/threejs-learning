@@ -2,7 +2,7 @@
  * This file is just a silly example to show everything working in the browser.
  * When you're ready to start on your site, clear the file. Happy hacking!
  **/
-
+import './style.css';
 import confetti from 'canvas-confetti';
 import * as THREE from 'three';
 import { Vector3 } from 'three';
@@ -60,9 +60,30 @@ scene.add(mesh);
 // mesh.position.normalize()
 //Size
 const size = {
-  width: 800,
-  height: 600,
+  width: window.innerWidth,
+  height: window.innerHeight,
 };
+
+window.addEventListener('resize', () => {
+  size.width = window.innerWidth;
+  size.height = window.innerHeight;
+
+  //Update camera
+  camera.aspect = size.width / size.height;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+  renderer.setSize(size.width, size.height);
+});
+
+window.addEventListener('dblclick', () => {
+  const fullscreenElement =
+    document.fullscreenElement || document.webkitFullscreenElement;
+  if (!fullscreenElement) {
+    canvas.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
 
 //axes
 // const axesHelper=new THREE.AxesHelper()
@@ -108,6 +129,7 @@ const clock = new THREE.Clock();
 
 //Controls
 const controls = new OrbitControls(camera, canvas);
+// controls.enabled = false;
 controls.enableDamping = true;
 
 let time = Date.now();
@@ -132,6 +154,7 @@ const tick = () => {
   // camera.lookAt(mesh.position);
   //Render
   renderer.render(scene, camera);
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
   window.requestAnimationFrame(tick);
 };
 
