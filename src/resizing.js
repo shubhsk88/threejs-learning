@@ -40,20 +40,8 @@ const cursor = { x: 0, y: 0 };
 // cube3.position.x=2
 // group.add(cube3)
 //geomery of object
-// const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
-
-const geometry = new THREE.BufferGeometry();
-
-const positions = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0]);
-
-const positionsAttribute = new THREE.BufferAttribute(positions, 3);
-
-geometry.setAttribute('position', positionsAttribute);
-
-const material = new THREE.MeshBasicMaterial({
-  color: 0xff0000,
-  wireframe: true,
-});
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const mesh = new THREE.Mesh(geometry, material);
 //position
 mesh.position.x = 0;
