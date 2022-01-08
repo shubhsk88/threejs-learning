@@ -9,15 +9,34 @@ import { Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import imgSource from './door/color.jpg';
 
-console.log(imgSource);
-
 /**
  * Textures
 
  */
 
-const textureLoader = new THREE.TextureLoader();
+const loadingManager = new THREE.LoadingManager();
+
+// loadingManager.onStart = () => {
+//   console.log('onStart');
+// };
+
+// loadingManager.onLoad = () => {
+//   console.log('onLoad');
+// };
+
+// loadingManager.onError = () => {
+//   console.log('onError');
+// };
+const textureLoader = new THREE.TextureLoader(loadingManager);
 const texture = textureLoader.load(imgSource);
+
+texture.repeat.x = 2;
+texture.repeat.y = 3;
+texture.wrapS = THREE.RepeatWrapping;
+texture.wrapT = THREE.RepeatWrapping;
+texture.offset.x = 0.5;
+texture.rotation = 1;
+
 // const image = new Image();
 // const texture = new THREE.Texture(image);
 
@@ -60,6 +79,7 @@ const cursor = { x: 0, y: 0 };
 // group.add(cube3)
 //geomery of object
 const geometry = new THREE.BoxGeometry(1, 1, 1);
+// const geometry = new THREE.SphereBufferGeometry(1, 32, 32);
 const material = new THREE.MeshBasicMaterial({ map: texture });
 const mesh = new THREE.Mesh(geometry, material);
 //position
