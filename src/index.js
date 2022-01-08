@@ -7,7 +7,26 @@ import confetti from 'canvas-confetti';
 import * as THREE from 'three';
 import { Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import gsap from 'gsap';
+import imgSource from './door/color.jpg';
+
+console.log(imgSource);
+
+/**
+ * Textures
+
+ */
+
+const textureLoader = new THREE.TextureLoader();
+const texture = textureLoader.load(imgSource);
+// const image = new Image();
+// const texture = new THREE.Texture(image);
+
+// image.onload = () => {
+//   console.log('loadede');
+//   texture.needsUpdate = true;
+// };
+// image.src = imgSource;
+
 //scene
 const scene = new THREE.Scene();
 
@@ -41,7 +60,7 @@ const cursor = { x: 0, y: 0 };
 // group.add(cube3)
 //geomery of object
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const material = new THREE.MeshBasicMaterial({ map: texture });
 const mesh = new THREE.Mesh(geometry, material);
 //position
 mesh.position.x = 0;
