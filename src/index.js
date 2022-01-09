@@ -8,6 +8,8 @@ import * as THREE from 'three';
 import { Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import imgSource from './door/color.jpg';
+import imgSource1 from './checkerboard-1024x1024.png';
+import imgSource2 from './minecraft.png';
 
 /**
  * Textures
@@ -28,14 +30,20 @@ const loadingManager = new THREE.LoadingManager();
 //   console.log('onError');
 // };
 const textureLoader = new THREE.TextureLoader(loadingManager);
-const texture = textureLoader.load(imgSource);
+const texture = textureLoader.load(imgSource2);
 
-texture.repeat.x = 2;
-texture.repeat.y = 3;
-texture.wrapS = THREE.RepeatWrapping;
-texture.wrapT = THREE.RepeatWrapping;
-texture.offset.x = 0.5;
-texture.rotation = 1;
+// texture.repeat.x = 2;
+// texture.repeat.y = 3;
+// texture.wrapS = THREE.RepeatWrapping;
+// texture.wrapT = THREE.RepeatWrapping;
+// texture.offset.x = 0.5;
+// texture.rotation = Math.PI / 4;
+// texture.center.x = 0.5;
+// texture.center.y = 0.5;
+
+texture.generateMipmaps = false;
+texture.minFilter = THREE.NearestFilter;
+texture.magFilter = THREE.NearestFilter;
 
 // const image = new Image();
 // const texture = new THREE.Texture(image);
