@@ -7,12 +7,56 @@ import confetti from 'canvas-confetti';
 import * as THREE from 'three';
 import { Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import gsap from 'gsap';
-import * as dat from 'dat.gui';
+import imgSource from './door/color.jpg';
+import imgSource1 from './checkerboard-1024x1024.png';
+import imgSource2 from './minecraft.png';
+
+/**
+ * Textures
+
+ */
+
+const loadingManager = new THREE.LoadingManager();
+
+// loadingManager.onStart = () => {
+//   console.log('onStart');
+// };
+
+// loadingManager.onLoad = () => {
+//   console.log('onLoad');
+// };
+
+// loadingManager.onError = () => {
+//   console.log('onError');
+// };
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const texture = textureLoader.load(imgSource2);
+
+// texture.repeat.x = 2;
+// texture.repeat.y = 3;
+// texture.wrapS = THREE.RepeatWrapping;
+// texture.wrapT = THREE.RepeatWrapping;
+// texture.offset.x = 0.5;
+// texture.rotation = Math.PI / 4;
+// texture.center.x = 0.5;
+// texture.center.y = 0.5;
+
+texture.generateMipmaps = false;
+texture.minFilter = THREE.NearestFilter;
+texture.magFilter = THREE.NearestFilter;
+
+// const image = new Image();
+// const texture = new THREE.Texture(image);
+
+// image.onload = () => {
+//   console.log('loadede');
+//   texture.needsUpdate = true;
+// };
+// image.src = imgSource;
+
 //scene
 const scene = new THREE.Scene();
 
-console.log(dat);
 // Objects
 
 //Cursors
@@ -42,25 +86,9 @@ const cursor = { x: 0, y: 0 };
 // cube3.position.x=2
 // group.add(cube3)
 //geomery of object
-// const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
-
-const geometry = new THREE.BufferGeometry();
-const count = 50;
-
-const positions = new Float32Array(count * 3 * 3);
-
-for (let i = 0; i < count * 3 * 3; i++) {
-  positions[i] = (Math.random() - 0.5) * 4;
-}
-
-const positionsAttribute = new THREE.BufferAttribute(positions, 3);
-
-geometry.setAttribute('position', positionsAttribute);
-
-const material = new THREE.MeshBasicMaterial({
-  color: 0xff0000,
-  wireframe: true,
-});
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+// const geometry = new THREE.SphereBufferGeometry(1, 32, 32);
+const material = new THREE.MeshBasicMaterial({ map: texture });
 const mesh = new THREE.Mesh(geometry, material);
 //position
 mesh.position.x = 0;
