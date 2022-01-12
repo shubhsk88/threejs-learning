@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import imgSource from './door/color.jpg';
 import alphaMap from './door/alpha.jpg';
+import matCaps from './textures/matcaps/1.png';
+import gradientTexture from './textures/gradients/3.jpg';
+import * as dat from 'dat.gui';
 
 /**
  * Base
@@ -10,6 +13,11 @@ import alphaMap from './door/alpha.jpg';
 // Canvas
 const canvas = document.querySelector('canvas.webgl');
 
+/**
+ * Debug
+ */
+
+const gui = new dat.GUI();
 // Scene
 const scene = new THREE.Scene();
 
@@ -18,12 +26,41 @@ const loadingManager = new THREE.LoadingManager();
 const textureLoader = new THREE.TextureLoader(loadingManager);
 const texture = textureLoader.load(imgSource);
 
+const matCapMaterial = textureLoader.load(matCaps);
+
+// const gradientTextureMaterial = textureLoader.load(gradientTexture);
+
+// gradientTextureMaterial.minFilter = THREE.NearestFilter;
+// gradientTextureMaterial.magFilter = THREE.NearestFilter;
+
 /**
  * Object
  */
 
-const material = new THREE.MeshBasicMaterial();
-material.map = texture;
+// const material = new THREE.MeshNormalMaterial();
+
+// material.flatShading = true;
+
+// const material = new THREE.MeshMatcapMaterial();
+// material.matcap = matCapMaterial;
+
+// const material = new THREE.MeshDepthMaterial();
+
+// const material = new THREE.MeshLambertMaterial();
+
+// const material = new THREE.MeshPhongMaterial();
+// material.shininess = 100;
+// material.specular = new THREE.Color('red');
+
+// const material = new THREE.MeshToonMaterial();
+
+// material.map = gradientTextureMaterial;
+
+const material = new THREE.MeshStandardMaterial();
+
+gui.add(material, 'metalness', 0, 1, 0.01);
+gui.add(material, 'roughness', 0, 1, 0.1);
+// material.map = texture;
 // // material.color.set('#2fffff');
 // material.color = new THREE.Color('#2fffff');
 
@@ -50,7 +87,18 @@ const torus = new THREE.Mesh(
   material,
 );
 
-scene.add(plane, sphere, torus);
+scene.add(sphere, plane, torus);
+
+/**
+ * Lights
+ */
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 0.5);
+pointLight.position.set(2, 3, 4);
+scene.add(pointLight);
 
 /**
  * Sizes
