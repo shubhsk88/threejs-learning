@@ -13,6 +13,7 @@
     "three": "^0.132.2"
   },
   "devDependencies": {
+    "@snowpack/plugin-webpack": "^3.0.0",
     "@types/snowpack-env": "^2.3.3",
     "@types/three": "^0.131.0",
     "prettier": "^2.2.1",
