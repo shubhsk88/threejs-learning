@@ -16,77 +16,61 @@ const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 /**
- * Axes helper
+ * Lights
  */
+// const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+// scene.add(ambientLight);
 
-// const axesHelper = new THREE.AxesHelper();
-// scene.add(axesHelper);
-/**
- * Textures
- */
-const textureLoader = new THREE.TextureLoader();
+const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.4);
+directionalLight.position.set(1, 0.25, 0);
+scene.add(directionalLight);
 
-const matCapTexture = textureLoader.load('textures/matcaps/8.png');
+// const hemisphereLight = new THREE.HemisphereLight(0xff0000, 0x0000ff, 0.4);
+// scene.add(hemisphereLight);
 
-/**
- * Fonts
- */
+// const pointLight = new THREE.PointLight(0xff9000, 0.8, 10, 2);
+// pointLight.position.set(1, -0.5, 1);
+// scene.add(pointLight);
 
-const fontsLoader = new THREE.FontLoader();
+// const rectLight = new THREE.RectAreaLight(0x4e00ff, 2, 1, 1);
+// rectLight.position.set(-1.5, 0, 1.5);
+// rectLight.lookAt(new THREE.Vector3(0, 0, 0));
+// scene.add(rectLight);
 
-fontsLoader.load('fonts/helvetiker_regular.typeface.json', (font) => {
-  const textGeometry = new THREE.TextGeometry('Shubham Singh', {
-    font,
-    size: 0.5,
-    height: 0.2,
-    curveSegments: 5,
-    bevelEnabled: true,
-    bevelThickness: 0.03,
-    bevelSize: 0.02,
-    bevelOffset: 0,
-    bevelSegments: 4,
-  });
-
-  textGeometry.computeBoundingBox();
-  textGeometry.center();
-
-  //   textGeometry.translate(
-  //     -(textGeometry.boundingBox.max.x - 0.02) * 0.5,
-  //     -(textGeometry.boundingBox.max.y - 0.02) * 0.5,
-  //     -(textGeometry.boundingBox.max.z - 0.03) * 0.5,
-  //   );
-  const material = new THREE.MeshMatcapMaterial({ matcap: matCapTexture });
-
-  //   textMaterial.wireframe = true;
-  const text = new THREE.Mesh(textGeometry, material);
-  text.position.set(0, 0, 0);
-  scene.add(text);
-
-  const donutGeometry = new THREE.TorusBufferGeometry(0.3, 0.2, 20, 45);
-
-  for (let i = 0; i < 100; i += 1) {
-    const donut = new THREE.Mesh(donutGeometry, material);
-    donut.position.x = (Math.random() - 0.5) * 10;
-    donut.position.y = (Math.random() - 0.5) * 10;
-    donut.position.z = (Math.random() - 0.5) * 10;
-
-    donut.rotation.x = Math.random() * Math.PI;
-    donut.rotation.y = Math.random() * Math.PI;
-    const scale = Math.random();
-    donut.scale.set(scale, scale, scale);
-
-    scene.add(donut);
-  }
-});
-// /**
-//  * Object
-//  */
-// const cube = new THREE.Mesh(
-//   new THREE.BoxGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial(),
+// const spotLight = new THREE.SpotLight(
+//   0x22eaaa,
+//   0.5,
+//   10,
+//   Math.PI * 0.1,
+//   0.25,
+//   1,
 // );
+// spotLight.position.set(0, 2, 3);
+// scene.add(spotLight);
+/**
+ * Objects
+ */
+// Material
+const material = new THREE.MeshStandardMaterial();
+material.roughness = 0.4;
 
-// scene.add(cube);
+// Objects
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), material);
+sphere.position.x = -1.5;
+
+const cube = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.75, 0.75), material);
+
+const torus = new THREE.Mesh(
+  new THREE.TorusGeometry(0.3, 0.2, 32, 64),
+  material,
+);
+torus.position.x = 1.5;
+
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), material);
+plane.rotation.x = -Math.PI * 0.5;
+plane.position.y = -0.65;
+
+scene.add(sphere, cube, torus, plane);
 
 /**
  * Sizes
@@ -145,6 +129,15 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // Update objects
+  sphere.rotation.y = 0.1 * elapsedTime;
+  cube.rotation.y = 0.1 * elapsedTime;
+  torus.rotation.y = 0.1 * elapsedTime;
+
+  sphere.rotation.x = 0.15 * elapsedTime;
+  cube.rotation.x = 0.15 * elapsedTime;
+  torus.rotation.x = 0.15 * elapsedTime;
 
   // Update controls
   controls.update();
