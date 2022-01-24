@@ -20,13 +20,13 @@ const scene = new THREE.Scene();
  * Lights
  */
 // Ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
 gui.add(ambientLight, 'intensity').min(0).max(1).step(0.001);
 
 scene.add(ambientLight);
 
 // Directional light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
 directionalLight.position.set(2, 2, -1);
 
 gui.add(directionalLight, 'intensity').min(0).max(1).step(0.001);
@@ -49,13 +49,18 @@ const spotLight = new THREE.SpotLight(0xffffff, 0.4, 10, Math.PI * 0.3);
 
 spotLight.shadow.width = 1024;
 spotLight.shadow.height = 1024;
-
+spotLight.shadow.camera.fov = 30;
+spotLight.shadow.camera.near = 1;
+spotLight.shadow.camera.far = 6;
 spotLight.castShadow = true;
 spotLight.position.set(0, 2, 2);
+
 scene.add(spotLight);
 scene.add(spotLight.target);
 
 const spotLightCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
+
+spotLightCameraHelper.visible = false;
 
 scene.add(spotLightCameraHelper);
 const directionalCameraHelper = new THREE.CameraHelper(
@@ -64,6 +69,30 @@ const directionalCameraHelper = new THREE.CameraHelper(
 directionalCameraHelper.visible = false;
 
 scene.add(directionalCameraHelper);
+
+// Point Light
+
+const pointLight = new THREE.PointLight(0xffffff, 0.3);
+
+pointLight.castShadow = true;
+
+pointLight.position.set(-1, 1, 0);
+pointLight.shadow.width = 1024;
+pointLight.shadow.height = 1024;
+pointLight.shadow.camera.near = 0.1;
+pointLight.shadow.camera.far = 6;
+
+scene.add(pointLight);
+const pointCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
+pointCameraHelper.visible = false;
+
+scene.add(pointCameraHelper);
+
+/* Textures */
+
+const textureLoader = new THREE.TextureLoader();
+
+const simpleShadow = textureLoader.load('textures/simpleShadow.jpg');
 /**
  * Materials
  */
@@ -84,7 +113,18 @@ plane.position.y = -0.5;
 
 plane.receiveShadow = true;
 
-scene.add(sphere, plane);
+const sphereShadow = new THREE.Mesh(
+  new THREE.PlaneBufferGeometry(1.5, 1.5),
+  new THREE.MeshBasicMaterial({
+    transparent: true,
+    color: 0x000000,
+    alphaMap: simpleShadow,
+  }),
+);
+sphereShadow.rotation.x = -Math.PI * 0.5;
+sphereShadow.position.y = plane.position.y + 0.01;
+
+scene.add(sphere, sphereShadow, plane);
 
 /**
  * Sizes
@@ -135,7 +175,7 @@ const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
 
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = false;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -150,6 +190,14 @@ const tick = () => {
 
   // Update controls
   controls.update();
+
+  sphere.position.x = Math.cos(elapsedTime) * 1.5;
+  sphere.position.z = Math.sin(elapsedTime) * 1.5;
+  sphere.position.y = Math.abs(Math.sin(elapsedTime * 3));
+
+  sphereShadow.position.x = sphere.position.x;
+  sphereShadow.position.z = sphere.position.z;
+  sphereShadow.material.opacity = (1 - sphere.position.y) * 0.4;
 
   // Render
   renderer.render(scene, camera);
