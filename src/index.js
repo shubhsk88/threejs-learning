@@ -2,7 +2,6 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
-import { CameraHelper } from 'three';
 
 /**
  * Base
@@ -17,114 +16,102 @@ const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 /**
+ * Textures
+ */
+const textureLoader = new THREE.TextureLoader();
+
+/**
+ * House
+ */
+
+const house = new THREE.Group();
+
+scene.add(house);
+
+const walls = new THREE.Mesh(
+  new THREE.BoxBufferGeometry(4, 2.5, 4),
+  new THREE.MeshStandardMaterial({ color: '#ac8e82' }),
+);
+walls.position.y = 1.25;
+house.add(walls);
+
+const roof = new THREE.Mesh(
+  new THREE.ConeBufferGeometry(3.5, 1, 4),
+  new THREE.MeshStandardMaterial({ color: '#b35f45' }),
+);
+
+roof.rotation.y = 0.25 * Math.PI;
+roof.position.y = 3;
+
+house.add(roof);
+
+/**Door */
+
+const doorTexture = textureLoader.load('textures/door/color.jpg');
+const door = new THREE.Mesh(
+  new THREE.PlaneBufferGeometry(2, 2),
+  new THREE.MeshStandardMaterial({
+    map: doorTexture,
+  }),
+);
+
+door.position.y = 1;
+
+door.position.z = 2.01;
+
+house.add(door);
+
+//Bushes
+
+const bushesGeometry = new THREE.SphereBufferGeometry(1, 16, 16);
+const bushesMaterial = new THREE.MeshStandardMaterial({
+  color: '#89C854',
+});
+
+const bush1 = new THREE.Mesh(bushesGeometry, bushesMaterial);
+
+bush1.scale.set(0.5, 0.5, 0.5);
+bush1.position.set(0.8, 0.2, 2.2);
+
+const bush2 = new THREE.Mesh(bushesGeometry, bushesMaterial);
+
+bush2.scale.set(0.25, 0.25, 0.25);
+bush2.position.set(1.4, 0.1, 2.1);
+
+const bush3 = new THREE.Mesh(bushesGeometry, bushesMaterial);
+
+bush3.scale.set(0.4, 0.4, 0.4);
+bush3.position.set(-0.8, 0.1, 2.1);
+
+house.add(bush1, bush2, bush3);
+
+// const gra
+
+// Floor
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshStandardMaterial({ color: '#a9c388' }),
+);
+floor.rotation.x = -Math.PI * 0.5;
+floor.position.y = 0;
+scene.add(floor);
+
+/**
  * Lights
  */
 // Ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+const ambientLight = new THREE.AmbientLight('#ffffff', 0.5);
 gui.add(ambientLight, 'intensity').min(0).max(1).step(0.001);
-
 scene.add(ambientLight);
 
 // Directional light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-directionalLight.position.set(2, 2, -1);
-
-gui.add(directionalLight, 'intensity').min(0).max(1).step(0.001);
-gui.add(directionalLight.position, 'x').min(-5).max(5).step(0.001);
-gui.add(directionalLight.position, 'y').min(-5).max(5).step(0.001);
-gui.add(directionalLight.position, 'z').min(-5).max(5).step(0.001);
-scene.add(directionalLight);
-directionalLight.castShadow = true;
-directionalLight.shadow.width = 1024;
-directionalLight.shadow.height = 1024;
-directionalLight.shadow.camera.top = 2;
-directionalLight.shadow.camera.right = 2;
-directionalLight.shadow.camera.bottom = -2;
-directionalLight.shadow.camera.left = -2;
-directionalLight.shadow.camera.near = 2;
-directionalLight.shadow.camera.far = 6;
-// directionalLight.shadow.radius = 10;
-
-const spotLight = new THREE.SpotLight(0xffffff, 0.4, 10, Math.PI * 0.3);
-
-spotLight.shadow.width = 1024;
-spotLight.shadow.height = 1024;
-spotLight.shadow.camera.fov = 30;
-spotLight.shadow.camera.near = 1;
-spotLight.shadow.camera.far = 6;
-spotLight.castShadow = true;
-spotLight.position.set(0, 2, 2);
-
-scene.add(spotLight);
-scene.add(spotLight.target);
-
-const spotLightCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
-
-spotLightCameraHelper.visible = false;
-
-scene.add(spotLightCameraHelper);
-const directionalCameraHelper = new THREE.CameraHelper(
-  directionalLight.shadow.camera,
-);
-directionalCameraHelper.visible = false;
-
-scene.add(directionalCameraHelper);
-
-// Point Light
-
-const pointLight = new THREE.PointLight(0xffffff, 0.3);
-
-pointLight.castShadow = true;
-
-pointLight.position.set(-1, 1, 0);
-pointLight.shadow.width = 1024;
-pointLight.shadow.height = 1024;
-pointLight.shadow.camera.near = 0.1;
-pointLight.shadow.camera.far = 6;
-
-scene.add(pointLight);
-const pointCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
-pointCameraHelper.visible = false;
-
-scene.add(pointCameraHelper);
-
-/* Textures */
-
-const textureLoader = new THREE.TextureLoader();
-
-const simpleShadow = textureLoader.load('textures/simpleShadow.jpg');
-/**
- * Materials
- */
-const material = new THREE.MeshStandardMaterial();
-material.roughness = 0.7;
-gui.add(material, 'metalness').min(0).max(1).step(0.001);
-gui.add(material, 'roughness').min(0).max(1).step(0.001);
-
-/**
- * Objects
- */
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), material);
-sphere.castShadow = true;
-
-const plane = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), material);
-plane.rotation.x = -Math.PI * 0.5;
-plane.position.y = -0.5;
-
-plane.receiveShadow = true;
-
-const sphereShadow = new THREE.Mesh(
-  new THREE.PlaneBufferGeometry(1.5, 1.5),
-  new THREE.MeshBasicMaterial({
-    transparent: true,
-    color: 0x000000,
-    alphaMap: simpleShadow,
-  }),
-);
-sphereShadow.rotation.x = -Math.PI * 0.5;
-sphereShadow.position.y = plane.position.y + 0.01;
-
-scene.add(sphere, sphereShadow, plane);
+const moonLight = new THREE.DirectionalLight('#ffffff', 0.5);
+moonLight.position.set(4, 5, -2);
+gui.add(moonLight, 'intensity').min(0).max(1).step(0.001);
+gui.add(moonLight.position, 'x').min(-5).max(5).step(0.001);
+gui.add(moonLight.position, 'y').min(-5).max(5).step(0.001);
+gui.add(moonLight.position, 'z').min(-5).max(5).step(0.001);
+scene.add(moonLight);
 
 /**
  * Sizes
@@ -145,7 +132,6 @@ window.addEventListener('resize', () => {
 
   // Update renderer
   renderer.setSize(sizes.width, sizes.height);
-
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
@@ -159,9 +145,9 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100,
 );
-camera.position.x = 1;
-camera.position.y = 1;
-camera.position.z = 2;
+camera.position.x = 4;
+camera.position.y = 2;
+camera.position.z = 5;
 scene.add(camera);
 
 // Controls
@@ -174,9 +160,6 @@ controls.enableDamping = true;
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
-
-renderer.shadowMap.enabled = false;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -190,14 +173,6 @@ const tick = () => {
 
   // Update controls
   controls.update();
-
-  sphere.position.x = Math.cos(elapsedTime) * 1.5;
-  sphere.position.z = Math.sin(elapsedTime) * 1.5;
-  sphere.position.y = Math.abs(Math.sin(elapsedTime * 3));
-
-  sphereShadow.position.x = sphere.position.x;
-  sphereShadow.position.z = sphere.position.z;
-  sphereShadow.material.opacity = (1 - sphere.position.y) * 0.4;
 
   // Render
   renderer.render(scene, camera);
