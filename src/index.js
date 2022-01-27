@@ -15,6 +15,11 @@ const canvas = document.querySelector('canvas.webgl');
 // Scene
 const scene = new THREE.Scene();
 
+// Fog
+const fog = new THREE.Fog('#262837', 1, 15);
+
+scene.fog = fog;
+
 /**
  * Textures
  */
@@ -47,12 +52,35 @@ house.add(roof);
 
 /**Door */
 
-const doorTexture = textureLoader.load('textures/door/color.jpg');
+const doorColorTexture = textureLoader.load('textures/door/color.jpg');
+const doorTextAlphaTexture = textureLoader.load('textures/door/alpha.jpg');
+const doorAmbientOcculsionTexture = textureLoader.load(
+  'textures/door/ambientOcculsion.jpg',
+);
+const doorNormalTexture = textureLoader.load('textures/door/normal.jpg');
+const doorRoughnessTexture = textureLoader.load('textures/door/roughness.jpg');
+const doorMetalnessTexture = textureLoader.load('textures/door/metalness.jpg');
+const doorHeightTexture = textureLoader.load('textures/door/height.jpg');
+
 const door = new THREE.Mesh(
-  new THREE.PlaneBufferGeometry(2, 2),
+  new THREE.PlaneBufferGeometry(2, 2, 100, 100),
   new THREE.MeshStandardMaterial({
-    map: doorTexture,
+    map: doorColorTexture,
+    transparent: true,
+    alphaMap: doorTextAlphaTexture,
+    aoMap: doorAmbientOcculsionTexture,
+    displacementScale: 0.1,
+    normalMap: doorNormalTexture,
+    roughnessMap: doorRoughnessTexture,
+    metalnessMap: doorMetalnessTexture,
+    displacementMap: doorHeightTexture,
+
   }),
+);
+
+door.geometry.setAttribute(
+  'uv2',
+  new THREE.Float32BufferAttribute(door.geometry.attributes.uv, 2),
 );
 
 door.position.y = 1;
@@ -119,18 +147,22 @@ scene.add(floor);
  * Lights
  */
 // Ambient light
-const ambientLight = new THREE.AmbientLight('#ffffff', 0.5);
+const ambientLight = new THREE.AmbientLight('#b9d5ff', 0.12);
 gui.add(ambientLight, 'intensity').min(0).max(1).step(0.001);
 scene.add(ambientLight);
 
 // Directional light
-const moonLight = new THREE.DirectionalLight('#ffffff', 0.5);
+const moonLight = new THREE.DirectionalLight('#b9d5ff', 0.12);
 moonLight.position.set(4, 5, -2);
 gui.add(moonLight, 'intensity').min(0).max(1).step(0.001);
 gui.add(moonLight.position, 'x').min(-5).max(5).step(0.001);
 gui.add(moonLight.position, 'y').min(-5).max(5).step(0.001);
 gui.add(moonLight.position, 'z').min(-5).max(5).step(0.001);
 scene.add(moonLight);
+
+const doorLight = new THREE.PointLight('#ff7d46', 1, 7);
+doorLight.position.set(0, 2, 2.7);
+house.add(doorLight);
 
 /**
  * Sizes
@@ -181,6 +213,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor('#262837');
 
 /**
  * Animate
