@@ -41,8 +41,14 @@ const particleMaterial = new THREE.PointsMaterial({
   size: 0.1,
 });
 
-particleMaterial.color = new THREE.Color('#ff88cc');
-particleMaterial.map = particleTexture;
+// particleMaterial.color = new THREE.Color('#ff88cc');
+particleMaterial.alphaMap = particleTexture;
+particleMaterial.transparent = true;
+// particleMaterial.alphaTest = 0.001;
+// particleMaterial.depthTest = false ;
+
+particleMaterial.depthWrite = false;
+
 const particles = new THREE.Points(particleGeometry, particleMaterial);
 
 scene.add(particles);
