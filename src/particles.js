@@ -20,16 +20,44 @@ const scene = new THREE.Scene();
  */
 const textureLoader = new THREE.TextureLoader();
 
-/**
- * Object
- */
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshBasicMaterial(),
+// const particleGeometry = new THREE.SphereBufferGeometry(1, 32, 32);
+
+const particleGeometry = new THREE.BufferGeometry();
+
+const particleTexture = textureLoader.load('textures/particles/2.png');
+
+const count = 5000;
+const positions = new Float32Array(count * 3);
+const colors = new Float32Array(count * 3);
+
+for (let i = 0; i < count * 3; i += 1) {
+  positions[i] = (Math.random() - 0.5) * 10;
+  colors[i] = Math.random();
+}
+
+particleGeometry.setAttribute(
+  'position',
+  new THREE.BufferAttribute(positions, 3),
 );
+particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const particleMaterial = new THREE.PointsMaterial({
+  size: 0.1,
+  sizeAttenuation: true,
+});
 
-scene.add(cube);
+// particleMaterial.color = new THREE.Color('#ff88cc');
+particleMaterial.vertexColors = true;
+particleMaterial.alphaMap = particleTexture;
+particleMaterial.transparent = true;
+// particleMaterial.alphaTest = 0.001;
+// particleMaterial.depthTest = false ;
 
+particleMaterial.depthWrite = false;
+particleMaterial.blending = THREE.AdditiveBlending;
+
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+
+scene.add(particles);
 /**
  * Sizes
  */
@@ -62,9 +90,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100,
 );
-camera.position.x = 1;
-camera.position.y = 1;
-camera.position.z = 2;
+camera.position.z = 3;
 scene.add(camera);
 
 // Controls
@@ -88,10 +114,20 @@ const clock = new THREE.Clock();
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
+  // particles.rotation.y = 0.2 * elapsedTime;
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    const x = particleGeometry.attributes.position.array[i3];
+    particleGeometry.attributes.position.array[i3 + 1] = Math.sin(
+      elapsedTime + x,
+    );
+    // Render
+  }
+
+  particleGeometry.attributes.position.needsUpdate = true;
   // Update controls
   controls.update();
 
-  // Render
   renderer.render(scene, camera);
 
   // Call tick again on the next frame
