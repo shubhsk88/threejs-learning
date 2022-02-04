@@ -16,6 +16,58 @@ const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 /**
+ * Galaxy
+ */
+
+const parameters = {};
+
+parameters.count = 1000;
+parameters.size = 0.02;
+
+let geometry = null;
+let material = null;
+let points = null;
+const generateGalaxy = () => {
+  if (points !== null) {
+    geometry.dispose();
+    material.dispose();
+    scene.remove(points);
+  }
+  geometry = new THREE.BufferGeometry();
+
+  const positions = new Float32Array(parameters.count * 3);
+
+  for (let i = 0; i < parameters.count; i += 1) {
+    const i3 = i * 3;
+    positions[i3] = (Math.random() - 0.5) * 3;
+    positions[i3 + 1] = (Math.random() - 0.5) * 3;
+    positions[i3 + 2] = (Math.random() - 0.5) * 3;
+  }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  material = new THREE.PointsMaterial({
+    size: parameters.size,
+    color: 0xffffff,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  points = new THREE.Points(geometry, material);
+  scene.add(points);
+};
+
+generateGalaxy();
+gui
+  .add(parameters, 'count')
+  .min(100)
+  .max(10000)
+  .step(100)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, 'size')
+  .min(0.01)
+  .max(2)
+  .step(0.01)
+  .onFinishChange(generateGalaxy);
+/**
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
@@ -23,12 +75,12 @@ const textureLoader = new THREE.TextureLoader();
 /**
  * Object
  */
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshBasicMaterial(),
-);
+// const cube = new THREE.Mesh(
+//   new THREE.BoxGeometry(1, 1, 1),
+//   new THREE.MeshBasicMaterial(),
+// );
 
-scene.add(cube);
+// scene.add(cube);
 
 /**
  * Sizes
