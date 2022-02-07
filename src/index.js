@@ -21,8 +21,11 @@ const scene = new THREE.Scene();
 
 const parameters = {};
 
-parameters.count = 1000;
-parameters.size = 0.02;
+parameters.count = 10000;
+parameters.size = 0.01;
+parameters.radius = 1;
+parameters.branches = 3;
+parameters.spin = 1;
 
 let geometry = null;
 let material = null;
@@ -39,9 +42,15 @@ const generateGalaxy = () => {
 
   for (let i = 0; i < parameters.count; i += 1) {
     const i3 = i * 3;
-    positions[i3] = (Math.random() - 0.5) * 3;
-    positions[i3 + 1] = (Math.random() - 0.5) * 3;
-    positions[i3 + 2] = (Math.random() - 0.5) * 3;
+    const radius = Math.random() * parameters.radius;
+    const branchAngle =
+      ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
+
+    const spinAngle = radius * parameters.spin;
+
+    positions[i3] = radius * Math.cos(branchAngle + spinAngle);
+    positions[i3 + 1] = 0;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius;
   }
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   material = new THREE.PointsMaterial({
@@ -66,6 +75,26 @@ gui
   .min(0.01)
   .max(2)
   .step(0.01)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'radius')
+  .min(1)
+  .max(10)
+  .step(0.1)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'branches')
+  .min(2)
+  .max(20)
+  .step(1)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, 'spin')
+  .min(-5)
+  .max(5)
+  .step(0.001)
   .onFinishChange(generateGalaxy);
 /**
  * Textures
@@ -139,6 +168,8 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // points.rotation.y = elapsedTime
 
   // Update controls
   controls.update();
