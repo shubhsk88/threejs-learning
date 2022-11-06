@@ -15,132 +15,10 @@ const canvas = document.querySelector('canvas.webgl');
 // Scene
 const scene = new THREE.Scene();
 
-/**
- * Galaxy
- */
+// Fog
+const fog = new THREE.Fog('#262837', 1, 15);
 
-const parameters = {};
-
-parameters.count = 100000;
-parameters.size = 0.01;
-parameters.radius = 2.7;
-parameters.branches = 5;
-parameters.spin = 3;
-parameters.randomness = 0.2;
-parameters.randomnessPower = 6;
-parameters.insideColor = '#ff6030';
-parameters.outsideColor = '#1b3984';
-
-let geometry = null;
-let material = null;
-let points = null;
-const generateGalaxy = () => {
-  if (points !== null) {
-    geometry.dispose();
-    material.dispose();
-    scene.remove(points);
-  }
-  geometry = new THREE.BufferGeometry();
-
-  const positions = new Float32Array(parameters.count * 3);
-  const colors = new Float32Array(parameters.count * 3);
-
-  const colorsInside = new THREE.Color(parameters.insideColor);
-  const colorsOutside = new THREE.Color(parameters.outsideColor);
-
-  for (let i = 0; i < parameters.count; i += 1) {
-    const i3 = i * 3;
-    const radius = Math.random() * parameters.radius;
-    const branchAngle =
-      ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
-
-    const spinAngle = radius * parameters.spin;
-
-    const randomX =
-      Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1);
-    const randomY =
-      Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1);
-
-    const randomZ =
-      Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1);
-
-    positions[i3] = radius * Math.cos(branchAngle + spinAngle) + randomX;
-    positions[i3 + 1] = randomY;
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
-    const mixedColors = colorsInside.clone();
-
-    mixedColors.lerp(colorsOutside, radius / parameters.radius);
-    //colors
-    colors[i3] = mixedColors.r;
-    colors[i3 + 1] = mixedColors.g;
-    colors[i3 + 2] = mixedColors.b;
-  }
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  material = new THREE.PointsMaterial({
-    size: parameters.size,
-    color: 0xffffff,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    vertexColors: true,
-  });
-  points = new THREE.Points(geometry, material);
-  scene.add(points);
-};
-
-generateGalaxy();
-gui
-  .add(parameters, 'count')
-  .min(100)
-  .max(10000)
-  .step(100)
-  .onFinishChange(generateGalaxy);
-gui
-  .add(parameters, 'size')
-  .min(0.01)
-  .max(2)
-  .step(0.01)
-  .onFinishChange(generateGalaxy);
-
-gui
-  .add(parameters, 'radius')
-  .min(1)
-  .max(10)
-  .step(0.1)
-  .onFinishChange(generateGalaxy);
-
-gui
-  .add(parameters, 'branches')
-  .min(2)
-  .max(20)
-  .step(1)
-  .onFinishChange(generateGalaxy);
-gui
-  .add(parameters, 'spin')
-  .min(-5)
-  .max(5)
-  .step(0.001)
-  .onFinishChange(generateGalaxy);
-
-gui
-  .add(parameters, 'randomness')
-  .min(0.001)
-  .max(1)
-  .step(0.001)
-  .onFinishChange(generateGalaxy);
-
-gui
-  .add(parameters, 'randomnessPower')
-  .min(1)
-  .max(10)
-  .step(0.001)
-  .onFinishChange(generateGalaxy);
-
-gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy);
-gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy);
+scene.fog = fog;
 
 /**
  * Textures
@@ -148,15 +26,215 @@ gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy);
 const textureLoader = new THREE.TextureLoader();
 
 /**
- * Object
+ * House
  */
-// const cube = new THREE.Mesh(
-//   new THREE.BoxGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial(),
-// );
 
-// scene.add(cube);
+const house = new THREE.Group();
 
+scene.add(house);
+
+const bricksColorTexture = textureLoader.load('textures/bricks/color.jpg');
+const bricksAmbientOcculsion = textureLoader.load(
+  'textures/bricks/ambientOcclusion.jpg',
+);
+const bricksNormalTexture = textureLoader.load('textures/bricks/normal.jpg');
+const bricksRoughnessTexture = textureLoader.load(
+  'textures/bricks/roughness.jpg',
+);
+
+const walls = new THREE.Mesh(
+  new THREE.BoxBufferGeometry(4, 2.5, 4),
+  new THREE.MeshStandardMaterial({
+    map: bricksColorTexture,
+    transparent: true,
+    aoMap: bricksAmbientOcculsion,
+    normalMap: bricksNormalTexture,
+    roughnessMap: bricksRoughnessTexture,
+  }),
+);
+
+walls.geometry.setAttribute(
+  'uv2',
+  new THREE.Float32BufferAttribute(walls.geometry.attributes.uv, 2),
+);
+walls.position.y = 1.25;
+house.add(walls);
+
+const roof = new THREE.Mesh(
+  new THREE.ConeBufferGeometry(3.5, 1, 4),
+  new THREE.MeshStandardMaterial({ color: '#b35f45' }),
+);
+
+roof.rotation.y = 0.25 * Math.PI;
+roof.position.y = 3;
+
+house.add(roof);
+
+/**Door */
+
+const doorColorTexture = textureLoader.load('textures/door/color.jpg');
+const doorTextAlphaTexture = textureLoader.load('textures/door/alpha.jpg');
+const doorAmbientOcculsionTexture = textureLoader.load(
+  'textures/door/ambientOcculsion.jpg',
+);
+const doorNormalTexture = textureLoader.load('textures/door/normal.jpg');
+const doorRoughnessTexture = textureLoader.load('textures/door/roughness.jpg');
+const doorMetalnessTexture = textureLoader.load('textures/door/metalness.jpg');
+const doorHeightTexture = textureLoader.load('textures/door/height.jpg');
+
+const door = new THREE.Mesh(
+  new THREE.PlaneBufferGeometry(2.2, 2.2, 100, 100),
+  new THREE.MeshStandardMaterial({
+    map: doorColorTexture,
+    transparent: true,
+    alphaMap: doorTextAlphaTexture,
+    aoMap: doorAmbientOcculsionTexture,
+    displacementScale: 0.1,
+    normalMap: doorNormalTexture,
+    roughnessMap: doorRoughnessTexture,
+    metalnessMap: doorMetalnessTexture,
+    displacementMap: doorHeightTexture,
+  }),
+);
+
+door.geometry.setAttribute(
+  'uv2',
+  new THREE.Float32BufferAttribute(door.geometry.attributes.uv, 2),
+);
+
+door.position.y = 1;
+
+door.position.z = 2.01;
+
+house.add(door);
+
+//Bushes
+
+const bushesGeometry = new THREE.SphereBufferGeometry(1, 16, 16);
+const bushesMaterial = new THREE.MeshStandardMaterial({
+  color: '#89C854',
+});
+
+const bush1 = new THREE.Mesh(bushesGeometry, bushesMaterial);
+
+bush1.scale.set(0.5, 0.5, 0.5);
+bush1.position.set(0.8, 0.2, 2.2);
+
+const bush2 = new THREE.Mesh(bushesGeometry, bushesMaterial);
+
+bush2.scale.set(0.25, 0.25, 0.25);
+bush2.position.set(1.4, 0.1, 2.1);
+
+const bush3 = new THREE.Mesh(bushesGeometry, bushesMaterial);
+
+bush3.scale.set(0.4, 0.4, 0.4);
+bush3.position.set(-0.8, 0.1, 2.1);
+
+house.add(bush1, bush2, bush3);
+
+const graves = new THREE.Group();
+
+scene.add(graves);
+
+const graveGeometry = new THREE.BoxBufferGeometry(0.6, 0.8, 0.2);
+const graveMaterial = new THREE.MeshStandardMaterial({
+  color: '#b2b6b1',
+});
+
+for (let i = 0; i < 50; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const radius = 3 + Math.random() * 5;
+  const x = Math.sin(angle) * radius;
+  const z = Math.cos(angle) * radius;
+
+  const grave = new THREE.Mesh(graveGeometry, graveMaterial);
+  grave.position.set(x, 0.4, z);
+  grave.castShadow = true;
+  grave.rotation.y = (Math.random() - 0.5) * 0.4;
+  grave.rotation.z = (Math.random() - 0.5) * 0.4;
+  graves.add(grave);
+}
+
+// Floor
+
+const grassColorTexture = textureLoader.load('textures/grass/color.jpg');
+const grassAmbientOcculsionTexture = textureLoader.load(
+  'textures/grass/ambientOcculsion.jpg',
+);
+const grassNormalTexture = textureLoader.load('textures/grass/normal.jpg');
+const grassRoughnessTexture = textureLoader.load(
+  'textures/grass/roughness.jpg',
+);
+
+grassColorTexture.repeat.set(8, 8);
+grassAmbientOcculsionTexture.repeat.set(8, 8);
+grassNormalTexture.repeat.set(8, 8);
+grassRoughnessTexture.repeat.set(8, 8);
+
+grassColorTexture.wrapS = THREE.RepeatWrapping;
+grassColorTexture.wrapT = THREE.RepeatWrapping;
+grassAmbientOcculsionTexture.wrapS = THREE.RepeatWrapping;
+grassAmbientOcculsionTexture.wrapT = THREE.RepeatWrapping;
+grassNormalTexture.wrapS = THREE.RepeatWrapping;
+grassNormalTexture.wrapT = THREE.RepeatWrapping;
+grassRoughnessTexture.wrapS = THREE.RepeatWrapping;
+grassRoughnessTexture.wrapT = THREE.RepeatWrapping;
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshStandardMaterial({
+    map: grassColorTexture,
+    aoMap: grassAmbientOcculsionTexture,
+    normalMap: grassNormalTexture,
+    roughnessMap: grassRoughnessTexture,
+  }),
+);
+
+floor.receiveShadow = true;
+floor.geometry.setAttribute(
+  'uv2',
+  new THREE.Float32BufferAttribute(floor.geometry.attributes.uv, 2),
+);
+floor.rotation.x = -Math.PI * 0.5;
+floor.position.y = 0;
+scene.add(floor);
+
+/**
+ * Lights
+ */
+// Ambient light
+const ambientLight = new THREE.AmbientLight('#b9d5ff', 0.12);
+gui.add(ambientLight, 'intensity').min(0).max(1).step(0.001);
+scene.add(ambientLight);
+
+// Directional light
+const moonLight = new THREE.DirectionalLight('#b9d5ff', 0.12);
+moonLight.position.set(4, 5, -2);
+gui.add(moonLight, 'intensity').min(0).max(1).step(0.001);
+gui.add(moonLight.position, 'x').min(-5).max(5).step(0.001);
+gui.add(moonLight.position, 'y').min(-5).max(5).step(0.001);
+gui.add(moonLight.position, 'z').min(-5).max(5).step(0.001);
+scene.add(moonLight);
+
+const doorLight = new THREE.PointLight('#ff7d46', 1, 7);
+doorLight.position.set(0, 2, 2.7);
+house.add(doorLight);
+
+/**
+ * Ghost
+ */
+
+const ghost1 = new THREE.PointLight('#ff00ff', 2, 3);
+
+scene.add(ghost1);
+
+const ghost2 = new THREE.PointLight('#00ffff', 2, 3);
+
+scene.add(ghost2);
+
+const ghost3 = new THREE.PointLight('#ffff00', 2, 3);
+
+scene.add(ghost3);
 /**
  * Sizes
  */
@@ -189,9 +267,9 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100,
 );
-camera.position.x = 1;
-camera.position.y = 1;
-camera.position.z = 2;
+camera.position.x = 4;
+camera.position.y = 2;
+camera.position.z = 5;
 scene.add(camera);
 
 // Controls
@@ -206,6 +284,39 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor('#262837');
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+moonLight.castShadow = true;
+ghost1.castShadow = true;
+
+ghost2.castShadow = true;
+ghost3.castShadow = true;
+
+doorLight.castShadow = true;
+
+doorLight.shadow.mapSize.width = 256;
+doorLight.shadow.mapSize.height = 256;
+doorLight.shadow.camera.far = 7;
+
+ghost1.shadow.mapSize.width = 256;
+ghost1.shadow.mapSize.height = 256;
+ghost1.shadow.camera.far = 7;
+
+ghost2.shadow.mapSize.width = 256;
+ghost2.shadow.mapSize.height = 256;
+ghost2.shadow.camera.far = 7;
+
+ghost3.shadow.mapSize.width = 256;
+ghost3.shadow.mapSize.height = 256;
+ghost3.shadow.camera.far = 7;
+
+walls.castShadow = true;
+bush1.castShadow = true;
+bush2.castShadow = true;
+bush3.castShadow = true;
 
 /**
  * Animate
@@ -215,7 +326,22 @@ const clock = new THREE.Clock();
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
-  points.rotation.y = elapsedTime
+  //Ghost
+
+  const ghost1Angle = 0.5 * elapsedTime;
+  ghost1.position.x = Math.cos(ghost1Angle) * 4;
+  ghost1.position.z = Math.sin(ghost1Angle) * 4;
+  ghost1.position.y = Math.sin(elapsedTime * 3);
+
+  const ghost2Angle = -0.32 * elapsedTime;
+  ghost2.position.x = Math.cos(ghost2Angle) * 5;
+  ghost2.position.z = Math.sin(ghost2Angle) * 5;
+  ghost2.position.y = Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5);
+
+  const ghost3Angle = -0.18 * elapsedTime;
+  ghost3.position.x = Math.cos(ghost3Angle) * (Math.sin(elapsedTime * 0.3) + 7);
+  ghost3.position.z = Math.sin(ghost3Angle) * (Math.sin(elapsedTime * 0.5) + 7);
+  ghost3.position.y = Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5);
 
   // Update controls
   controls.update();
